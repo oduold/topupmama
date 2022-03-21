@@ -15,6 +15,10 @@ class CreateCharactersTable extends Migration
     {
         Schema::create('characters', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->foreign('book_id')->references('id')->on('books');
+            $table->integer('age');
+            $table->foreign('gender_id')->references('id')->on('gender');
             $table->timestamps();
         });
     }

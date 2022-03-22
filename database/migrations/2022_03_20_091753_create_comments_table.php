@@ -17,8 +17,9 @@ class CreateCommentsTable extends Migration
             $table->id();
             $table->string('comment');
             $table->integer('ip');
-            $table->foreign('book_id')->references('id')->on('books');
+            $table->unsignedBigInteger('book_id');            
             $table->timestamps();
+            $table->foreign('book_id')->references('id')->on('books');
         });
     }
 

@@ -15,11 +15,13 @@ class CreateCharactersTable extends Migration
     {
         Schema::create('characters', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->foreign('book_id')->references('id')->on('books');
+            $table->string('name');                      
             $table->integer('age');
-            $table->foreign('gender_id')->references('id')->on('gender');
+            $table->unsignedBigInteger('book_id');  
+            $table->unsignedBigInteger('gender_id');            
             $table->timestamps();
+            $table->foreign('book_id')->references('id')->on('books');
+            $table->foreign('gender_id')->references('id')->on('gender');
         });
     }
 

@@ -25,5 +25,4 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
     $router->post('books',  ['uses' => 'BookController@create']);
     $router->delete('books/{id}',  ['uses' => 'BookController@delete']);
     $router->put('books/{id}',  ['uses' => 'BookController@update']);
-    
 });

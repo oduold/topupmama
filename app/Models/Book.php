@@ -20,6 +20,16 @@ class Book extends Model {
      */
     protected $hidden = [
     ];
+    
+    public function comments() {
+        return $this->hasMany(Comment::class);
+    }
 
-
+    public function characters() {
+        return $this->hasMany(Character::class);
+    }
+    
+    public function authors() {
+        return $this->belongsToMany(Author::class)->using(AuthorBook::class);
+    }
 }

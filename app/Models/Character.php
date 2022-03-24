@@ -18,8 +18,13 @@ class Character extends Model {
      *
      * @var array
      */
-    protected $hidden = [
-    ];
+    protected $hidden = ['book_id'];
 
-
+    public function book() {
+        $this->belongsTo(Book::class,'book_id');
+    }
+    
+    public function gender() {        
+       $this->hasOne(Gender::class,'gender_id');
+    }
 }

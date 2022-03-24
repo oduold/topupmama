@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Comment extends Model {
+class Gender extends Model {
 
+    protected $table = 'gender';
     /**
      * The attributes that are mass assignable.
      *

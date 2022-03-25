@@ -6,10 +6,14 @@ use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use function Symfony\Component\String\b;
+use Illuminate\Database\Eloquent\Collection;
+use App\Models\Character;
 
 class BookController extends Controller {
     public function __construct() { 
     }
+    
     
     /**
      * @OA\Get(
@@ -19,8 +23,10 @@ class BookController extends Controller {
      *  tags={"books"},
      *  @OA\Response(response=200,description="List of books")
      * )
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    
     public function books(Request $request) {
         $books = Book::select('id','title','release_date')
             ->with('authors:id','authors:name')
@@ -37,7 +43,7 @@ class BookController extends Controller {
      * )
      * 
      * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\Response|\Laravel\Lumen\Http\ResponseFactory|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse
      */
     public function book($id) {
         $book = Book::select('id','title','release_date')
@@ -59,17 +65,19 @@ class BookController extends Controller {
      * )
      * 
      * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @throws NotFoundHttpException
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response|\Laravel\Lumen\Http\ResponseFactory|\Illuminate\Contracts\Routing\ResponseFactory
      */
     public function bookComments($id) {
         try {
-            $book = Book::select('id','title','release_date')
-            ->where('id','=',$id)->with('comments')->get();
-            if($book->isEmpty()) {
+            $book = Book::find($id);
+            if(!$book) {
                 throw new NotFoundHttpException('book not found');
             }
-            $comments = $book->pluck('comments')->flatten()->sortByDesc('updated_at')->values()->all();
-            return response()->json($comments);
+            $book->load(['comments' => function($query) {$query->orderBy('updated_at','desc');}]);
+            $comments = $book->comments;
+            Log::info('comments', ['comments' => $comments]);
+            return response()->json($book->comments);
         } catch (NotFoundHttpException $e) {
             Log::error($e->getMessage());
             return response($e->getMessage(),404);
@@ -85,6 +93,11 @@ class BookController extends Controller {
     /**
      * @OA\Get(path="/api/v1/books/{id}/characters",operationId="bookCharacters",tags={"book"},
      *  @OA\Parameter(name="id",in="path",required=true,@OA\Schema(type="integer")),
+     *  @OA\Parameter(name="sort",in="query",description="sort according to name,age,gender",required=false,
+     *      @OA\Schema(type="array",@OA\Items(type="string",enum={"name","age","gender"}))),
+     *  @OA\Parameter(name="filter",in="query",description="filter according to gender",required=false,
+     *      @OA\Schema(type="array",@OA\Items(type="string",enum={"Male","Female","Other"}))
+     *      ),
      *  @OA\Response(response="200",description="get book characters"),
      *  @OA\Response(response=404,description="Book not found"),
      * )
@@ -95,16 +108,36 @@ class BookController extends Controller {
      */
     public function bookCharacters(Request $request,$id) {
         try {
-            $book = Book::select('id','title','release_date')
-            ->where('id','=',$id)->with('characters')->get();
-            if($book->isEmpty()) {
-                throw new NotFoundHttpException('book not found');
+            $book = Book::find($id);
+            if(!$book) {
+               throw new NotFoundHttpException('book not found');
+            }
+            $book->load(['characters' => function($query){
+                $query->orderBy('name');
+            },'characters.gender:id,gender_type']);
+            /** @var Collection $characters */
+            $characters = $book->characters;
+            if($request->has('filter')) {
+                $filter = $request->input('filter');
+                if(!empty($filter)) {
+                    Log::info('filtering collection by : ',  ['filter' => $filter]);
+                    /** @var $value Character **/
+                    $characters = $characters->filter(function($value,$key) use ($filter) {
+                        return  $value->gender->gender_type === $filter;
+                    });
+                }
             }
             $sort = 'name';
             if($request->has('sort')) {
-                $sort = $request->input('sort');
+                if(!empty($sort)) {
+                    $sort = $request->input('sort');
+                    Log::info('sorting collection by : ',  ['sort' => $sort]);
+                    $characters = $characters->sortBy(function($query) use ($sort) {
+                        return $query->orderBy($sort);
+                    });
+                }
             }
-            $characters = $book->pluck('characters')->flatten()->sortBy($sort)->values()->all();
+            $characters = $characters->all();            
             return response()->json($characters);
         } catch (NotFoundHttpException $e) {
             Log::error($e->getMessage());
@@ -115,8 +148,7 @@ class BookController extends Controller {
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response('server error',500);
-        }
-        
+        }        
     }
     
     

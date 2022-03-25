@@ -3,8 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Comment extends Model {
+    
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -20,8 +24,8 @@ class Comment extends Model {
      */
     protected $hidden = ['book_id'];
 
-    public function book() {
-        $this->belongsTo(Book::class,'book_id');
+    public function book() : BelongsTo {
+        return $this->belongsTo(Book::class,'book_id');
     }
 
 }

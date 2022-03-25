@@ -23,6 +23,7 @@ class CommentSeeder extends Seeder
             $ip = rand(0,255).'.'.rand(0,255).'.'.rand(0,255).'.'.rand(0,255);
             $c->ip = ip2long($ip);
             $c->save();
+            sleep(1);
         }
     }
 }

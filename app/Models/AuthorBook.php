@@ -12,5 +12,5 @@ class AuthorBook extends Pivot {
      *
      * @var bool
      */
-    public $incrementing = true;
+    public $incrementing = false;
 }

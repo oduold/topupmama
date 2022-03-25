@@ -3,9 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 
 class Book extends Model {
+    
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -21,7 +26,7 @@ class Book extends Model {
      */
     protected $hidden = [];
     
-    public function comments() {
+    public function comments() : HasMany {
         return $this->hasMany(Comment::class);
     }
 
@@ -29,7 +34,7 @@ class Book extends Model {
         return $this->hasMany(Character::class);
     }
     
-    public function authors() {
+    public function authors() : BelongsToMany {
         return $this->belongsToMany(Author::class)->using(AuthorBook::class);
     }
 }

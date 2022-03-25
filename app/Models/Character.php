@@ -3,8 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Character extends Model {
+    
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -18,13 +22,13 @@ class Character extends Model {
      *
      * @var array
      */
-    protected $hidden = ['book_id'];
+    protected $hidden = ['book_id','gender_id'];
 
-    public function book() {
-        $this->belongsTo(Book::class,'book_id');
+    public function book() : BelongsTo {
+        return $this->belongsTo(Book::class,'book_id');
     }
     
-    public function gender() {        
-       $this->hasOne(Gender::class,'gender_id');
+    public function gender() : BelongsTo {        
+        return $this->belongsTo(Gender::class,'gender_id');
     }
 }

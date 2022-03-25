@@ -23,3 +23,7 @@ Homestead.yaml
 Homestead.json
 /.vagrant
 .phpunit.result.cache
+/.metadata/
+/resources/views/vendor
+/storage/api-docs
+/public/swagger-ui-assets

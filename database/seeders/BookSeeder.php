@@ -42,7 +42,7 @@ class BookSeeder extends Seeder
         
         $b3 = new Book();
         $b3->title = 'Furrow';
-        $b2->release_date = '1921-01-01';
+        $b3->release_date = '1921-01-01';
         $b3->save();
         $a3 = Author::find($jm->id);        
         $a3->books()->attach($b3->id);

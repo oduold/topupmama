@@ -75,6 +75,8 @@ paths:
                   $ref: '#/components/schemas/Book'
         '400':
           description: Bad Request
+        '404':
+          description: Resource not found
     
     put:
       summary: Update Book
@@ -104,6 +106,31 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Book'
+        '404':
+          description: Resource not found          
+                  
+    delete:
+      summary: Delete a Book
+      description: Deletes a Book based on id
+      tags:
+        - Book
+      parameters:
+        - name: id
+          in: path
+          description: book unique identity
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: delete message.
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Resource not found        
                   
   /api/v1/books/{id}/comments:
     summary: Find Book comments by id

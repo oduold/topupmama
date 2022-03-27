@@ -10,6 +10,7 @@ use function Symfony\Component\String\b;
 use Illuminate\Database\Eloquent\Collection;
 use App\Models\Character;
 use App\Models\Author;
+use App\Models\Comment;
 
 class BookController extends Controller {
     
@@ -59,10 +60,10 @@ class BookController extends Controller {
             return response()->json($book->comments);
         } catch (NotFoundHttpException $e) {
             Log::error($e->getMessage());
-            return response($e->getMessage(),404);
+            return response("resource not found",404);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
-            return response('server error',500);
+            return response("resource not found",404);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response('server error',500);
@@ -107,10 +108,10 @@ class BookController extends Controller {
             return response()->json($characters);
         } catch (NotFoundHttpException $e) {
             Log::error($e->getMessage());
-            return response($e->getMessage(),404);
+            return response("resource not found",404);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
-            return response('server error',500);
+            return response("resource not found",404);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response('server error',500);
@@ -204,12 +205,12 @@ class BookController extends Controller {
                 $book->authors()->detach($ad->id);
                 $ad->delete();
             }
-        }catch (NotFoundHttpException $e) {
+        } catch (NotFoundHttpException $e) {
             Log::error($e->getMessage());
-            return response($e->getMessage(),404);
+            return response("resource not found",404);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
-            return response('server error',500);
+            return response("resource not found",404);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response('server error',500);
@@ -217,10 +218,51 @@ class BookController extends Controller {
         
         return response()->json($book, 200);
     }
-    
+
+    /**
+     * 
+     * @param integer $id
+     * @return \Illuminate\Http\Response|\Laravel\Lumen\Http\ResponseFactory
+     */
     public function delete($id)
     {
-        Book::findOrFail($id)->delete();
+        try {
+            /** @var Book $book **/
+            $book = Book::with(['authors','characters','comments'])->findOrFail($id);
+            Log::info('book', ['book' => $book]);
+            //detach from authors
+            $authors = $book->authors()->get();
+            Log::info('authors', ['authors' => $authors]);
+            /** @var Author $author **/
+            foreach ($authors as $author) {
+                //detach from book
+                $book->authors()->detach($author->id);
+            }
+            //delete comments
+            $comments = $book->comments()->get();
+            Log::info('comments', ['comments' => $comments]);
+            /** @var Comment $comment **/
+            foreach ($comments as $comment) {
+                $comment->delete();
+            }
+            //delete characters
+            $characters = $book->characters()->get();
+            Log::info('characters', ['characters' => $characters]);
+            /** @var Character $character **/
+            foreach ($characters as $character) {
+                $character->delete();
+            }
+            $book->delete();
+        } catch (NotFoundHttpException $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response('server error',500);
+        }
         return response('Deleted Successfully', 200);
     }
 }

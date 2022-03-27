@@ -24,7 +24,8 @@ paths:
     get:
       tags:
         - Books
-      summary: Retrieve list of books  
+      summary: Retrieve list of books
+      operationId: books
       responses:
         '200':
           description: A list of books.
@@ -39,6 +40,7 @@ paths:
       tags:
         - Books
       summary: Adding a new book
+      operationId: create
       requestBody:
         required: true
         content:
@@ -56,6 +58,7 @@ paths:
     description: Returns book based on id
     get:
       summary: Find a book
+      operationId: book
       tags:
         - Book
       parameters:
@@ -83,6 +86,7 @@ paths:
     put:
       summary: Update Book
       description: Update a book based on id
+      operationId: update
       tags:
         - Book
       parameters:
@@ -114,6 +118,7 @@ paths:
     delete:
       summary: Delete a Book
       description: Deletes a book based on id
+      operationId: delete
       tags:
         - Book
       parameters:
@@ -139,8 +144,10 @@ paths:
     description: Returns a book's comments based on id
     get:
       summary: Retrieve a book's comments
+      operationId: bookComments
       tags:
         - Book
+        - Comments
       parameters:
         - name: id
           in: path
@@ -158,10 +165,13 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CommentWithId'
+                  
     post:
       tags:
+        - Comments
         - Book
-      summary: Adding a new comment to a book
+      summary: Adding a new comment
+      operationId: createBookComment
       parameters:
         - name: id
           in: path
@@ -178,7 +188,7 @@ paths:
               $ref: '#/components/schemas/Comment'
       responses:
         '201':
-          description: Created
+          description: Created              
                   
   /api/v1/books/{id}/characters:
     summary: Book characters operation
@@ -187,6 +197,8 @@ paths:
       summary: retrieve a book's characters
       tags:
         - Book
+        - Characters
+      operationId: bookCharacters
       parameters:
         - name: id
           in: path
@@ -208,15 +220,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Character'
-                  
     post:
       tags:
         - Book
-      summary: Adding a new character to a book
+        - Characters
+      summary: Adding a new character
+      operationId: createBookCharacter
       parameters:
         - name: id
           in: path
-          description: book unique identity
+          description: character unique identity
           required: true
           schema:
             type: integer
@@ -230,6 +243,125 @@ paths:
       responses:
         '201':
           description: Created
+  
+  /api/v1/comments/{id}:
+    summary: Comment operations
+    description: Returns comment based on id
+    put:
+      summary: Update Comment
+      description: Update a comment based on id
+      operationId: updateComment
+      tags:
+        - Comment
+      parameters:
+        - name: id
+          in: path
+          description: comment unique identity
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '200':
+          description: comment data.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '404':
+          description: Resource not found          
+                  
+    delete:
+      summary: Delete a Comment
+      description: Deletes a comment based on id
+      operationId: deleteComment
+      tags:
+        - Comment
+      parameters:
+        - name: id
+          in: path
+          description: comment unique identity
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: delete message.
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Resource not found
+  
+  /api/v1/characters/{id}:
+    summary: Character operations
+    description: Returns character based on id
+    
+    put:
+      summary: Update Character
+      description: Update a character based on id
+      operationId: updateCharacter
+      tags:
+        - Character
+      parameters:
+        - name: id
+          in: path
+          description: character unique identity
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Character'
+      responses:
+        '200':
+          description: character data.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Character'
+        '404':
+          description: Resource not found          
+                  
+    delete:
+      summary: Delete a Character
+      description: Deletes a character based on id
+      operationId: deleteCharacter
+      tags:
+        - Character
+      parameters:
+        - name: id
+          in: path
+          description: character unique identity
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: delete message.
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Resource not found
           
 components:
   schemas:
@@ -287,6 +419,7 @@ components:
           format: int32
         gender:
           $ref: '#/components/schemas/Gender'
+          
     CharacterWithId:
       allOf:
         - $ref: '#/components/schemas/Character'
@@ -298,19 +431,17 @@ components:
             created_at:
               type: string
             updated_at:
-              type: string  
+              type: string
           
     Comment:
       type: object
       required:
         - comment
-        - ip
       properties:
         comment:
           type: string
           maxLength: 500
-        ip:
-          type: string
+        
           
     CommentWithId:
       allOf:
@@ -320,6 +451,8 @@ components:
             id:
               type: integer
               format: int64
+            ip:
+              type: string
             created_at:
               type: string
             updated_at:

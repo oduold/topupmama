@@ -122,8 +122,7 @@ class BookController extends Controller {
             Log::error($e->getMessage());
             return response('server error',500);
         }        
-    }
-    
+    }    
     
     /**
      * 
@@ -158,6 +157,36 @@ class BookController extends Controller {
             $book->authors()->attach($author->id);
         }  
         return response()->json($book, 201);
+    }
+    
+    /**
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createBookComment($id,Request $request)
+    {
+        try {
+            Log::info('request',['request' => $request->all()]);
+            //find if book with same title exists
+            $book = Book::findOrFail($id);
+            /** @var Comment $comment  **/
+            $comment = new Comment();
+            $comment->book_id = $book->id;
+            $comment->comment = $request->input('comment');
+            $comment->ip = ip2long($request);
+            $comment->save();
+        }catch (NotFoundHttpException $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response('server error',500);
+        }
+        return response()->json($comment, 201);
     }
    
     /**

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Models\Gender;
 
 class BookController extends Controller {
     
@@ -122,8 +123,7 @@ class BookController extends Controller {
             Log::error($e->getMessage());
             return response('server error',500);
         }        
-    }
-    
+    }    
     
     /**
      * 
@@ -158,6 +158,79 @@ class BookController extends Controller {
             $book->authors()->attach($author->id);
         }  
         return response()->json($book, 201);
+    }
+    
+    /**
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createBookComment($id,Request $request)
+    {
+        try {
+            Log::info('request',['request' => $request->all()]);
+            //find if book with same title exists
+            $book = Book::findOrFail($id);
+            /** @var Comment $comment  **/
+            $comment = new Comment();
+            $comment->book_id = $book->id;
+            $comment->comment = $request->input('comment');
+            $comment->ip = ip2long($request);
+            $comment->save();
+        }catch (NotFoundHttpException $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response('server error',500);
+        }
+        return response()->json($comment, 201);
+    }
+    
+    /**
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createBookCharacter($id,Request $request)
+    {
+        try {
+            Log::info('request',['request' => $request->all()]);
+            //find if book with same title exists
+            /** @var Book $book **/
+            $book = Book::with('characters')->findOrFail($id);
+            /** @var  Collection $characters  **/
+            $characters = $book->comments;
+            //might be same name but differnt person with different age
+            if($characters->contains('name','=',$request->input('name')) && 
+                $characters->contains('age','=',$request->input('age'))) {
+                return response()->json("Conflict this character already exists", 409);
+            }
+            /** @var Comment $comment  **/
+            $character = new Character();
+            $character->book_id = $book->id;
+            $character->name = $request->input('name');
+            $character->age = $request->input('age');
+            if($request->has('gender')) {
+                $q = Gender::query();
+                $gender = $q->firstWhere('gender_type',$request->input('gender')['gender_type']);
+                $character->gender_id = $gender->id;
+            }            
+            $character->save();
+        }catch (NotFoundHttpException $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response('server error',500);
+        }
+        return response()->json($character, 201);
     }
    
     /**

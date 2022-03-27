@@ -92,29 +92,38 @@ class BookController extends Controller {
                     /** @var $value Character **/
                     $characters = $characters->filter(function($value,$key) use ($filter) {
                         return  $value->gender->gender_type === $filter;
-                    });
+                    });                    
                 }
             }
+            $sorted = $characters;
             $sort = 'name';
             $sortType = 'asc';
-            if($request->has('sort')) {
+            if($request->has('sortby')) {
+                
                 if(!empty($sort)) {
-                    $sort = $request->input('sort');
-                    Log::info('sorting collection by : ',  ['sort' => $sort]);
-                    /** @var Builder $query **/
-                    $characters = $characters->sortBy(function($query) use ($sort,$sortType) {
-                        return ($sortType == 'desc') ? $query->orderByDesc($sort): $query->orderBy($sort);
-                    });
+                    $sort = $request->input('sortby');
+                    if($request->has('sort')) {
+                        $sortType = $request->input('sort');
+                    }                    
+                    /** @var Collection $sorted **/
+                    $sorted = $characters->sortBy($sort,SORT_NATURAL,$sortType === 'desc');
+                    Log::info('sorting collection by : ',  ['sortby' => $sort,'sort' => $sortType, 'characters' => $sorted]);
                 }
             }
-            $characters = $characters->all();            
-            return response()->json($characters);
+            $total_characters = $sorted->count();
+            $total_age_years = $sorted->sum('age');
+            $total_age_months = ($total_age_years > 0) ? $total_age_years * 12 : 0 ;
+            $data = ['characters_count' => $total_characters, 
+                'age_of_characters_in_years' => $total_age_years, 
+                'age_of_characters_in_months' => $total_age_months, 
+                'characters' => $sorted->all()];
+            return response()->json($data);
         } catch (NotFoundHttpException $e) {
             Log::error($e->getMessage());
             return response("resource not found",404);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
-            return response("resource not found",404);
+            return response('server error',500);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response('server error',500);

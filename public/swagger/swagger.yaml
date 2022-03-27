@@ -196,6 +196,7 @@ paths:
             type: integer
             format: int64
         - $ref: '#/components/parameters/sortCharacters'
+        - $ref: '#/components/parameters/sortTypeCharacters'
         - $ref: '#/components/parameters/filterCharacters'
           
       responses:
@@ -333,13 +334,23 @@ components:
           type: string
   parameters:
     sortCharacters:
-      name: sort
+      name: sortby
       in: query
       description: sort paraemter
       required: false
       schema:
         type: string
         enum: [name,age,gender]
+        
+    sortTypeCharacters:
+      name: sort
+      in: query
+      description: in ascending or descending order
+      required: false
+      schema:
+        type: string
+        enum: [asc,desc]
+        
     filterCharacters:
       name: filter
       in: query

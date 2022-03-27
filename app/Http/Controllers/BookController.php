@@ -52,10 +52,7 @@ class BookController extends Controller {
      */
     public function bookComments($id) {
         try {
-            $book = Book::find($id);
-            if(!$book) {
-                throw new NotFoundHttpException('book not found');
-            }
+            $book = Book::findOrFail($id);            
             $book->load(['comments' => function($query) {$query->orderBy('updated_at','desc');}]);
             $comments = $book->comments;
             Log::info('comments', ['comments' => $comments]);
@@ -80,10 +77,7 @@ class BookController extends Controller {
      */
     public function bookCharacters(Request $request,$id) {
         try {
-            $book = Book::find($id);
-            if(!$book) {
-               throw new NotFoundHttpException('book not found');
-            }
+            $book = Book::findOrFail($id);
             $book->load(['characters' => function($query){
                 $query->orderBy('name');
             },'characters.gender:id,gender_type']);
@@ -136,6 +130,7 @@ class BookController extends Controller {
         $bookQuery = Book::query();
         $book = $bookQuery->where('title','=',$request->input('title'))->first();
         if($book) {
+            //TODO check authors to see if those also match
             return response()->json('Conflict Book exists',409);
         }
         /** @var Book $book **/
@@ -154,15 +149,71 @@ class BookController extends Controller {
                 Log::info('author',['author' => $author]);
             }            
             $book->authors()->attach($author->id);
-         }
-         $book->with('author');
+        }  
         return response()->json($book, 201);
     }
-    
+   
+    /**
+     * 
+     * @param int $id
+     * @param Request $request
+     * @return \Illuminate\Http\Response|\Laravel\Lumen\Http\ResponseFactory|\Illuminate\Http\JsonResponse
+     */
     public function update($id, Request $request)
     {
-        $book = Book::findOrFail($id);
-        $book->update($request->all());
+        try {
+            /** @var Book $book **/ 
+            $book = Book::findOrFail($id);
+            Log::info('book',['book' => $book]);
+            $book->update($request->all());
+            if($request->has('authors')) {
+                $authors = $request->input('authors');
+                /** @var Collection **/
+                $currentAuthors = $book->authors()->get();
+                /** @var array **/
+                $carray = [];
+                //update to authors                
+                Log::info('book',['book' => $book, 'authors' => $authors,'currentAuthors' => $currentAuthors]);
+                //add new authors
+                foreach ($authors as $authorName) {
+                    $q = Author::query();
+                    /** @var Author $author **/
+                    $author = $q->firstWhere('name','=',$authorName);
+                    Log::info('author',['author' => $author]);
+                    if(!$author) {
+                        /** @var Author $author **/
+                        $author = new Author(['name' => $authorName['name']]);
+                        $author->save();
+                        Log::info('author',['author' => $author]);
+                    }
+                    if(!$currentAuthors->contains($author)) {
+                        $book->authors()->attach($author->id);
+                    }
+                    else{
+                        Log::info('forget', ['currentAuthors' => $carray]);
+                        array_push($carray, $author->id);
+                    }
+                }
+            }
+            $authorsToDelete = $currentAuthors->except($carray);
+            Log::info('current after author operation', ['currentAuthors' => $carray, 'tobedeleted' => $authorsToDelete]);
+            //delete authors
+            /** @var Author $ad **/
+            foreach ($authorsToDelete as $ad) {
+                //detach from book
+                $book->authors()->detach($ad->id);
+                $ad->delete();
+            }
+        }catch (NotFoundHttpException $e) {
+            Log::error($e->getMessage());
+            return response($e->getMessage(),404);
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+            return response('server error',500);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response('server error',500);
+        }
         
         return response()->json($book, 200);
     }

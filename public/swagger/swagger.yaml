@@ -75,7 +75,36 @@ paths:
                   $ref: '#/components/schemas/Book'
         '400':
           description: Bad Request
-          
+    
+    put:
+      summary: Update Book
+      description: Updates Book based on id
+      tags:
+        - Book
+      parameters:
+        - name: id
+          in: path
+          description: book unique identity
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+      responses:
+        '200':
+          description: book data.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+                  
   /api/v1/books/{id}/comments:
     summary: Find Book comments by id
     description: Returns Book comments based on id

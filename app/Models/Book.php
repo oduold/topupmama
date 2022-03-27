@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-
+/**
+ * @author don
+ *
+ */
 class Book extends Model {
     
     use HasFactory;
@@ -24,13 +27,13 @@ class Book extends Model {
      *
      * @var array
      */
-    protected $hidden = [];
+    protected $hidden = [];     
     
     public function comments() : HasMany {
         return $this->hasMany(Comment::class);
     }
 
-    public function characters() {
+    public function characters() : HasMany {
         return $this->hasMany(Character::class);
     }
     

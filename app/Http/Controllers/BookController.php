@@ -11,23 +11,14 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Models\Character;
 
 class BookController extends Controller {
-    public function __construct() { 
-    }
-    
     
     /**
-     * @OA\Get(
-     *  path="/api/v1/books",
-     *  operationId="books",
-     *  summary="Get List of Books",
-     *  tags={"books"},
-     *  @OA\Response(response=200,description="List of books")
-     * )
      * 
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function books(Request $request) {
+        Log::info('retrieving list of books');
         $books = Book::select('id','title','release_date')
             ->with('authors:id','authors:name')
             ->withCount('comments')
@@ -36,11 +27,6 @@ class BookController extends Controller {
     }
 
     /**
-     * @OA\Get(path="/api/v1/books/{id}",operationId="book",tags={"book"},
-     *  @OA\Parameter(name="id",in="path",required=true,@OA\Schema(type="integer")),
-     *  @OA\Response(response="200",description="get book"),
-     *  @OA\Response(response=404,description="Book not found"),
-     * )
      * 
      * @param int $id
      * @return \Illuminate\Http\Response|\Laravel\Lumen\Http\ResponseFactory|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse
@@ -58,12 +44,7 @@ class BookController extends Controller {
     }
     
     /**
-     * @OA\Get(path="/api/v1/books/{id}/comments",operationId="bookComments",tags={"book"},
-     *  @OA\Parameter(name="id",in="path",required=true,@OA\Schema(type="integer")),
-     *  @OA\Response(response="200",description="get book comments"),
-     *  @OA\Response(response=404,description="Book not found"),
-     * )
-     * 
+     *  
      * @param int $id
      * @throws NotFoundHttpException
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response|\Laravel\Lumen\Http\ResponseFactory|\Illuminate\Contracts\Routing\ResponseFactory
@@ -90,17 +71,7 @@ class BookController extends Controller {
         }
     }
     
-    /**
-     * @OA\Get(path="/api/v1/books/{id}/characters",operationId="bookCharacters",tags={"book"},
-     *  @OA\Parameter(name="id",in="path",required=true,@OA\Schema(type="integer")),
-     *  @OA\Parameter(name="sort",in="query",description="sort according to name,age,gender",required=false,
-     *      @OA\Schema(type="array",@OA\Items(type="string",enum={"name","age","gender"}))),
-     *  @OA\Parameter(name="filter",in="query",description="filter according to gender",required=false,
-     *      @OA\Schema(type="array",@OA\Items(type="string",enum={"Male","Female","Other"}))
-     *      ),
-     *  @OA\Response(response="200",description="get book characters"),
-     *  @OA\Response(response=404,description="Book not found"),
-     * )
+    /** 
      * 
      * @param Request $request
      * @param int $id
@@ -152,6 +123,11 @@ class BookController extends Controller {
     }
     
     
+    /**
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function create(Request $request)
     {
         $book = Book::create($request->all());

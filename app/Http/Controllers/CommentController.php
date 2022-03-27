@@ -9,7 +9,11 @@ use App\Models\Comment;
 
 class CommentController extends Controller {
     
-    
+    /**
+     * 
+     * @param integer $id
+     * @return \Illuminate\Http\Response|\Laravel\Lumen\Http\ResponseFactory
+     */
     public function deleteComment($id) {
         try {
             Comment::findOrFail($id)->delete();
@@ -24,5 +28,14 @@ class CommentController extends Controller {
             return response('server error',500);
         }
         return response('Deleted Successfully', 200);
-    }    
+    } 
+    
+    /**
+     * TODO update comment operation
+     * 
+     * @param integer $id
+     */
+    public function updateComment($id) {
+        
+    }
 }

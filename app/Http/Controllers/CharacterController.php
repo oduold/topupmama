@@ -9,7 +9,11 @@ use App\Models\Character;
 
 class CharacterController extends Controller {
    
-    
+    /**
+     * 
+     * @param integer $id
+     * @return \Illuminate\Http\Response|\Laravel\Lumen\Http\ResponseFactory
+     */
     public function deleteCharacter($id) {
         try {
             Character::findOrFail($id)->delete();
@@ -24,5 +28,14 @@ class CharacterController extends Controller {
             return response('server error',500);
         }
         return response('Deleted Successfully', 200);
+    }
+    
+    /**
+     * TODO update character operation
+     *
+     * @param integer $id
+     */
+    public function updateCharacter($id) {
+        
     }
 }

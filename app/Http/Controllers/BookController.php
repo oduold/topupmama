@@ -9,7 +9,6 @@ use App\Models\Comment;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Models\Gender;
 
 class BookController extends Controller {
@@ -48,7 +47,6 @@ class BookController extends Controller {
     /**
      *  
      * @param int $id
-     * @throws NotFoundHttpException
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response|\Laravel\Lumen\Http\ResponseFactory|\Illuminate\Contracts\Routing\ResponseFactory
      */
     public function bookComments($id) {
@@ -57,9 +55,6 @@ class BookController extends Controller {
             $book = Book::findOrFail($id);
             $book->load(['comments' => function($query) {$query->orderBy('updated_at','desc');}]);
             return response()->json($book->comments);
-        } catch (NotFoundHttpException $e) {
-            Log::error($e->getMessage());
-            return response("resource not found",404);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
             return response("resource not found",404);
@@ -113,10 +108,7 @@ class BookController extends Controller {
                 'age_of_characters_in_months' => $total_age_months, 
                 'characters' => $characters];
             return response()->json($data);
-        } catch (NotFoundHttpException $e) {
-            Log::error($e->getMessage());
-            return response("resource not found",404);
-        } catch (\Throwable $e) {
+        }  catch (\Throwable $e) {
             Log::error($e->getMessage());
             return response('server error',500);
         } catch (\Exception $e) {
@@ -177,9 +169,6 @@ class BookController extends Controller {
             $comment->comment = $request->input('comment');
             $comment->ip = ip2long($request);
             $comment->save();
-        }catch (NotFoundHttpException $e) {
-            Log::error($e->getMessage());
-            return response("resource not found",404);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
             return response("resource not found",404);
@@ -220,9 +209,6 @@ class BookController extends Controller {
                 $character->gender_id = $gender->id;
             }            
             $character->save();
-        }catch (NotFoundHttpException $e) {
-            Log::error($e->getMessage());
-            return response("resource not found",404);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
             return response("resource not found",404);
@@ -284,9 +270,6 @@ class BookController extends Controller {
                 $book->authors()->detach($ad->id);
                 $ad->delete();
             }
-        } catch (NotFoundHttpException $e) {
-            Log::error($e->getMessage());
-            return response("resource not found",404);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
             return response("resource not found",404);
@@ -332,9 +315,6 @@ class BookController extends Controller {
                 $character->delete();
             }
             $book->delete();
-        } catch (NotFoundHttpException $e) {
-            Log::error($e->getMessage());
-            return response("resource not found",404);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
             return response("resource not found",404);

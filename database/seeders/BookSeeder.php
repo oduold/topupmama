@@ -26,7 +26,7 @@ class BookSeeder extends Seeder
         
         $b1 = new Book();
         $b1->title = 'Future Crimes';
-        $b1->release_date = '2015';
+        $b1->release_date = '2015-01-01';
         $b1->save();
         $a1 = Author::find($mg->id);
         $a1->books()->attach($b1->id);
@@ -34,7 +34,7 @@ class BookSeeder extends Seeder
         
         $b2 = new Book();
         $b2->title = 'Lord Of the Rings, The Two Towers';
-        $b2->release_date = '1966';
+        $b2->release_date = '1966-01-01';
         $b2->save();
         $a2 = Author::find($jr->id);
         $a2->books()->attach($b2->id);
@@ -42,6 +42,7 @@ class BookSeeder extends Seeder
         
         $b3 = new Book();
         $b3->title = 'Furrow';
+        $b2->release_date = '1921-01-01';
         $b3->save();
         $a3 = Author::find($jm->id);        
         $a3->books()->attach($b3->id);
@@ -49,7 +50,7 @@ class BookSeeder extends Seeder
         
         $b4 = new Book();
         $b4->title = 'The World According to Clarkson';
-        $b4->release_date = '2004';
+        $b4->release_date = '2004-07-01';
         $b4->save();
         $a4 = Author::find($j->id);
         $a4->books()->attach($b4->id);        

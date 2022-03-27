@@ -147,8 +147,8 @@ components:
         title:
           type: string
         release_date:
-          type: integer
-          format: int32
+          type: string
+          format: date
         authors:
           type: array
           items:
@@ -210,6 +210,7 @@ components:
           format: int64
         comment:
           type: string
+          maxLength: 500
         ip:
           type: string
         created_at:

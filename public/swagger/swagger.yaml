@@ -243,6 +243,8 @@ paths:
       responses:
         '201':
           description: Created
+        '409':
+          description: Conflict Character exists
   
   /api/v1/comments/{id}:
     summary: Comment operations

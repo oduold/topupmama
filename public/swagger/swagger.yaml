@@ -343,7 +343,7 @@ components:
         enum: [name,age,gender]
         
     sortTypeCharacters:
-      name: sort
+      name: direction
       in: query
       description: in ascending or descending order
       required: false

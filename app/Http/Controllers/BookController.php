@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Author;
 use App\Models\Book;
+use App\Models\Character;
+use App\Models\Comment;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use function Symfony\Component\String\b;
-use Illuminate\Database\Eloquent\Collection;
-use App\Models\Character;
-use App\Models\Author;
-use App\Models\Comment;
-use Illuminate\Database\Query\Builder;
 
 class BookController extends Controller {
     
@@ -54,10 +52,9 @@ class BookController extends Controller {
      */
     public function bookComments($id) {
         try {
-            $book = Book::findOrFail($id);            
+            /** @var Book $book  **/
+            $book = Book::findOrFail($id);
             $book->load(['comments' => function($query) {$query->orderBy('updated_at','desc');}]);
-            $comments = $book->comments;
-            Log::info('comments', ['comments' => $comments]);
             return response()->json($book->comments);
         } catch (NotFoundHttpException $e) {
             Log::error($e->getMessage());
@@ -80,8 +77,20 @@ class BookController extends Controller {
     public function bookCharacters(Request $request,$id) {
         try {
             $book = Book::findOrFail($id);
-            $book->load(['characters' => function($query){
-                $query->orderBy('name');
+            $sortby = 'name';
+            $direction = 'asc';
+            if($request->has('sortby')) {
+                $sortby = $request->input('sortby');
+                if($request->has('direction')) {
+                    $direction = $request->input('direction');
+                } 
+            }
+            $book->load(['characters' => function($query) use($sortby,$direction){
+                Log::info('sorting collection by : ',  ['sortby' => $sortby,'direction' => $direction]);
+                if($sortby === 'gender') {
+                    $sortby = 'gender_id';
+                }
+                return $query->orderBy($sortby,$direction);
             },'characters.gender:id,gender_type']);
             /** @var Collection $characters */
             $characters = $book->characters;
@@ -95,28 +104,13 @@ class BookController extends Controller {
                     });                    
                 }
             }
-            $sorted = $characters;
-            $sort = 'name';
-            $sortType = 'asc';
-            if($request->has('sortby')) {
-                
-                if(!empty($sort)) {
-                    $sort = $request->input('sortby');
-                    if($request->has('sort')) {
-                        $sortType = $request->input('sort');
-                    }                    
-                    /** @var Collection $sorted **/
-                    $sorted = $characters->sortBy($sort,SORT_NATURAL,$sortType === 'desc');
-                    Log::info('sorting collection by : ',  ['sortby' => $sort,'sort' => $sortType, 'characters' => $sorted]);
-                }
-            }
-            $total_characters = $sorted->count();
-            $total_age_years = $sorted->sum('age');
+            $total_characters = $characters->count();
+            $total_age_years = $characters->sum('age');
             $total_age_months = ($total_age_years > 0) ? $total_age_years * 12 : 0 ;
             $data = ['characters_count' => $total_characters, 
                 'age_of_characters_in_years' => $total_age_years, 
                 'age_of_characters_in_months' => $total_age_months, 
-                'characters' => $sorted->all()];
+                'characters' => $characters];
             return response()->json($data);
         } catch (NotFoundHttpException $e) {
             Log::error($e->getMessage());

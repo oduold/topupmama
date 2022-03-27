@@ -18,13 +18,13 @@ class CharacterSeeder extends Seeder
         $m = new Character();
         $m->name = 'Mary';
         $m->book_id = 3;
-        $m->gender_id = 2;
+        $m->gender_id = 1;
         $m->save();
         
         $m = new Character();
         $m->name = 'Christ';
         $m->book_id = 3;
-        $m->gender_id = 1;;
+        $m->gender_id = 2;;
         $m->save();
         
         $m = new Character();
@@ -36,7 +36,7 @@ class CharacterSeeder extends Seeder
         $m = new Character();
         $m->name = 'Aragorn';
         $m->book_id = 2;
-        $m->gender_id = 1;
+        $m->gender_id = 2;
         $m->save();
         
         
@@ -49,13 +49,13 @@ class CharacterSeeder extends Seeder
         $m = new Character();
         $m->name = 'Bobbi';
         $m->book_id = 1;
-        $m->gender_id= 2;
+        $m->gender_id= 1;
         $m->save();
         
         $m = new Character();
         $m->name = 'Sam';
         $m->book_id = 2;
-        $m->gender_id = 1;
+        $m->gender_id = 2;
         $m->save();
     }
 }

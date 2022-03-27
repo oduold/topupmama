@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Comment extends Model {
     
@@ -23,7 +24,16 @@ class Comment extends Model {
      * @var array
      */
     protected $hidden = ['book_id'];
-
+    
+       
+    /**
+     * 
+     * @return Attribute
+     */   
+    protected function getIpAttribute($value) {
+        return long2ip($value);
+    }
+    
     public function book() : BelongsTo {
         return $this->belongsTo(Book::class,'book_id');
     }

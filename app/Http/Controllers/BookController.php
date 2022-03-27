@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Author;
 use App\Models\Book;
+use App\Models\Character;
+use App\Models\Comment;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use function Symfony\Component\String\b;
-use Illuminate\Database\Eloquent\Collection;
-use App\Models\Character;
+use App\Models\Gender;
 
 class BookController extends Controller {
     
@@ -51,20 +53,16 @@ class BookController extends Controller {
      */
     public function bookComments($id) {
         try {
-            $book = Book::find($id);
-            if(!$book) {
-                throw new NotFoundHttpException('book not found');
-            }
+            /** @var Book $book  **/
+            $book = Book::findOrFail($id);
             $book->load(['comments' => function($query) {$query->orderBy('updated_at','desc');}]);
-            $comments = $book->comments;
-            Log::info('comments', ['comments' => $comments]);
             return response()->json($book->comments);
         } catch (NotFoundHttpException $e) {
             Log::error($e->getMessage());
-            return response($e->getMessage(),404);
+            return response("resource not found",404);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
-            return response('server error',500);
+            return response("resource not found",404);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response('server error',500);
@@ -79,12 +77,21 @@ class BookController extends Controller {
      */
     public function bookCharacters(Request $request,$id) {
         try {
-            $book = Book::find($id);
-            if(!$book) {
-               throw new NotFoundHttpException('book not found');
+            $book = Book::findOrFail($id);
+            $sortby = 'name';
+            $direction = 'asc';
+            if($request->has('sortby')) {
+                $sortby = $request->input('sortby');
+                if($request->has('direction')) {
+                    $direction = $request->input('direction');
+                } 
             }
-            $book->load(['characters' => function($query){
-                $query->orderBy('name');
+            $book->load(['characters' => function($query) use($sortby,$direction){
+                Log::info('sorting collection by : ',  ['sortby' => $sortby,'direction' => $direction]);
+                if($sortby === 'gender') {
+                    $sortby = 'gender_id';
+                }
+                return $query->orderBy($sortby,$direction);
             },'characters.gender:id,gender_type']);
             /** @var Collection $characters */
             $characters = $book->characters;
@@ -95,24 +102,20 @@ class BookController extends Controller {
                     /** @var $value Character **/
                     $characters = $characters->filter(function($value,$key) use ($filter) {
                         return  $value->gender->gender_type === $filter;
-                    });
+                    });                    
                 }
             }
-            $sort = 'name';
-            if($request->has('sort')) {
-                if(!empty($sort)) {
-                    $sort = $request->input('sort');
-                    Log::info('sorting collection by : ',  ['sort' => $sort]);
-                    $characters = $characters->sortBy(function($query) use ($sort) {
-                        return $query->orderBy($sort);
-                    });
-                }
-            }
-            $characters = $characters->all();            
-            return response()->json($characters);
+            $total_characters = $characters->count();
+            $total_age_years = $characters->sum('age');
+            $total_age_months = ($total_age_years > 0) ? $total_age_years * 12 : 0 ;
+            $data = ['characters_count' => $total_characters, 
+                'age_of_characters_in_years' => $total_age_years, 
+                'age_of_characters_in_months' => $total_age_months, 
+                'characters' => $characters];
+            return response()->json($data);
         } catch (NotFoundHttpException $e) {
             Log::error($e->getMessage());
-            return response($e->getMessage(),404);
+            return response("resource not found",404);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
             return response('server error',500);
@@ -120,8 +123,7 @@ class BookController extends Controller {
             Log::error($e->getMessage());
             return response('server error',500);
         }        
-    }
-    
+    }    
     
     /**
      * 
@@ -130,22 +132,216 @@ class BookController extends Controller {
      */
     public function create(Request $request)
     {
-        $book = Book::create($request->all());
-        
+        Log::info('request',['request' => $request->all()]);
+        //find if book with same title exists
+        $bookQuery = Book::query();
+        $book = $bookQuery->where('title','=',$request->input('title'))->first();
+        if($book) {
+            //TODO check authors to see if those also match
+            return response()->json('Conflict Book exists',409);
+        }
+        /** @var Book $book **/
+        $book = Book::create($request->all());        
+        $authors = $request->input('authors');
+        Log::info('book',['book' => $book, 'authors' => $authors]);
+        foreach ($authors as $authorName) {
+            $q = Author::query();
+            /** @var Author $author **/
+            $author = $q->firstWhere('name','=',$authorName);
+            Log::info('author',['author' => $author]);
+            if(!$author) {
+                /** @var Author $author **/
+                $author = new Author(['name' => $authorName['name']]);
+                $author->save();
+                Log::info('author',['author' => $author]);
+            }            
+            $book->authors()->attach($author->id);
+        }  
         return response()->json($book, 201);
     }
     
+    /**
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createBookComment($id,Request $request)
+    {
+        try {
+            Log::info('request',['request' => $request->all()]);
+            //find if book with same title exists
+            $book = Book::findOrFail($id);
+            /** @var Comment $comment  **/
+            $comment = new Comment();
+            $comment->book_id = $book->id;
+            $comment->comment = $request->input('comment');
+            $comment->ip = ip2long($request);
+            $comment->save();
+        }catch (NotFoundHttpException $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response('server error',500);
+        }
+        return response()->json($comment, 201);
+    }
+    
+    /**
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createBookCharacter($id,Request $request)
+    {
+        try {
+            Log::info('request',['request' => $request->all()]);
+            //find if book with same title exists
+            /** @var Book $book **/
+            $book = Book::with('characters')->findOrFail($id);
+            /** @var  Collection $characters  **/
+            $characters = $book->comments;
+            //might be same name but differnt person with different age
+            if($characters->contains('name','=',$request->input('name')) && 
+                $characters->contains('age','=',$request->input('age'))) {
+                return response()->json("Conflict this character already exists", 409);
+            }
+            /** @var Comment $comment  **/
+            $character = new Character();
+            $character->book_id = $book->id;
+            $character->name = $request->input('name');
+            $character->age = $request->input('age');
+            if($request->has('gender')) {
+                $q = Gender::query();
+                $gender = $q->firstWhere('gender_type',$request->input('gender')['gender_type']);
+                $character->gender_id = $gender->id;
+            }            
+            $character->save();
+        }catch (NotFoundHttpException $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response('server error',500);
+        }
+        return response()->json($character, 201);
+    }
+   
+    /**
+     * 
+     * @param int $id
+     * @param Request $request
+     * @return \Illuminate\Http\Response|\Laravel\Lumen\Http\ResponseFactory|\Illuminate\Http\JsonResponse
+     */
     public function update($id, Request $request)
     {
-        $book = Book::findOrFail($id);
-        $book->update($request->all());
+        try {
+            /** @var Book $book **/ 
+            $book = Book::findOrFail($id);
+            Log::info('book',['book' => $book]);
+            $book->update($request->all());
+            if($request->has('authors')) {
+                $authors = $request->input('authors');
+                /** @var Collection **/
+                $currentAuthors = $book->authors()->get();
+                /** @var array **/
+                $carray = [];
+                //update to authors                
+                Log::info('book',['book' => $book, 'authors' => $authors,'currentAuthors' => $currentAuthors]);
+                //add new authors
+                foreach ($authors as $authorName) {
+                    $q = Author::query();
+                    /** @var Author $author **/
+                    $author = $q->firstWhere('name','=',$authorName);
+                    Log::info('author',['author' => $author]);
+                    if(!$author) {
+                        /** @var Author $author **/
+                        $author = new Author(['name' => $authorName['name']]);
+                        $author->save();
+                        Log::info('author',['author' => $author]);
+                    }
+                    if(!$currentAuthors->contains($author)) {
+                        $book->authors()->attach($author->id);
+                    }
+                    else{
+                        Log::info('forget', ['currentAuthors' => $carray]);
+                        array_push($carray, $author->id);
+                    }
+                }
+            }
+            $authorsToDelete = $currentAuthors->except($carray);
+            Log::info('current after author operation', ['currentAuthors' => $carray, 'tobedeleted' => $authorsToDelete]);
+            //delete authors
+            /** @var Author $ad **/
+            foreach ($authorsToDelete as $ad) {
+                //detach from book
+                $book->authors()->detach($ad->id);
+                $ad->delete();
+            }
+        } catch (NotFoundHttpException $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response('server error',500);
+        }
         
         return response()->json($book, 200);
     }
-    
+
+    /**
+     * 
+     * @param integer $id
+     * @return \Illuminate\Http\Response|\Laravel\Lumen\Http\ResponseFactory
+     */
     public function delete($id)
     {
-        Book::findOrFail($id)->delete();
+        try {
+            /** @var Book $book **/
+            $book = Book::with(['authors','characters','comments'])->findOrFail($id);
+            Log::info('book', ['book' => $book]);
+            //detach from authors
+            $authors = $book->authors()->get();
+            Log::info('authors', ['authors' => $authors]);
+            /** @var Author $author **/
+            foreach ($authors as $author) {
+                //detach from book
+                $book->authors()->detach($author->id);
+            }
+            //delete comments
+            $comments = $book->comments()->get();
+            Log::info('comments', ['comments' => $comments]);
+            /** @var Comment $comment **/
+            foreach ($comments as $comment) {
+                $comment->delete();
+            }
+            //delete characters
+            $characters = $book->characters()->get();
+            Log::info('characters', ['characters' => $characters]);
+            /** @var Character $character **/
+            foreach ($characters as $character) {
+                $character->delete();
+            }
+            $book->delete();
+        } catch (NotFoundHttpException $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response('server error',500);
+        }
         return response('Deleted Successfully', 200);
     }
 }

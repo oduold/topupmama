@@ -9,6 +9,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use function Symfony\Component\String\b;
 use Illuminate\Database\Eloquent\Collection;
 use App\Models\Character;
+use App\Models\Author;
 
 class BookController extends Controller {
     
@@ -130,8 +131,31 @@ class BookController extends Controller {
      */
     public function create(Request $request)
     {
-        $book = Book::create($request->all());
-        
+        Log::info('request',['request' => $request->all()]);
+        //find if book with same title exists
+        $bookQuery = Book::query();
+        $book = $bookQuery->where('title','=',$request->input('title'))->first();
+        if($book) {
+            return response()->json('Conflict Book exists',409);
+        }
+        /** @var Book $book **/
+        $book = Book::create($request->all());        
+        $authors = $request->input('authors');
+        Log::info('book',['book' => $book, 'authors' => $authors]);
+        foreach ($authors as $authorName) {
+            $q = Author::query();
+            /** @var Author $author **/
+            $author = $q->firstWhere('name','=',$authorName);
+            Log::info('author',['author' => $author]);
+            if(!$author) {
+                /** @var Author $author **/
+                $author = new Author(['name' => $authorName['name']]);
+                $author->save();
+                Log::info('author',['author' => $author]);
+            }            
+            $book->authors()->attach($author->id);
+         }
+         $book->with('author');
         return response()->json($book, 201);
     }
     

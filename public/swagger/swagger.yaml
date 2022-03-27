@@ -19,11 +19,12 @@ tags:
     
 paths:
   /api/v1/books:
-    summary: Return all list of books
-    description: Book list
+    summary: Retrieve all list of books
+    description: Book list operations
     get:
       tags:
         - Books
+      summary: Retrieve list of books  
       responses:
         '200':
           description: A list of books.
@@ -37,7 +38,7 @@ paths:
     post:
       tags:
         - Books
-      summary: adding a new book
+      summary: Adding a new book
       requestBody:
         required: true
         content:
@@ -51,9 +52,10 @@ paths:
           description: Conflict Book exists
           
   /api/v1/books/{id}:
-    summary: Find Book by id
-    description: Returns Book based on id
+    summary: Book operations
+    description: Returns book based on id
     get:
+      summary: Find a book
       tags:
         - Book
       parameters:
@@ -80,7 +82,7 @@ paths:
     
     put:
       summary: Update Book
-      description: Updates Book based on id
+      description: Update a book based on id
       tags:
         - Book
       parameters:
@@ -111,7 +113,7 @@ paths:
                   
     delete:
       summary: Delete a Book
-      description: Deletes a Book based on id
+      description: Deletes a book based on id
       tags:
         - Book
       parameters:
@@ -133,9 +135,10 @@ paths:
           description: Resource not found        
                   
   /api/v1/books/{id}/comments:
-    summary: Find Book comments by id
-    description: Returns Book comments based on id
+    summary: Book comments operations
+    description: Returns a book's comments based on id
     get:
+      summary: Retrieve a book's comments
       tags:
         - Book
       parameters:
@@ -148,18 +151,40 @@ paths:
             format: int64
       responses:
         '200':
-          description: A list of book comments.
+          description: A list of book's comments.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Comment'
+                  $ref: '#/components/schemas/CommentWithId'
+    post:
+      tags:
+        - Book
+      summary: Adding a new comment to a book
+      parameters:
+        - name: id
+          in: path
+          description: book unique identity
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '201':
+          description: Created
                   
   /api/v1/books/{id}/characters:
-    summary: Find Book characters by id
-    description: Returns Book characters based on id
+    summary: Book characters operation
+    description: Returns a book's characters based on id
     get:
+      summary: retrieve a book's characters
       tags:
         - Book
       parameters:
@@ -175,14 +200,36 @@ paths:
           
       responses:
         '200':
-          description: A list of book characters.
+          description: A list of a book's characters.
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Character'
-  
+                  
+    post:
+      tags:
+        - Book
+      summary: Adding a new character to a book
+      parameters:
+        - name: id
+          in: path
+          description: book unique identity
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Character'
+      responses:
+        '201':
+          description: Created
+          
 components:
   schemas:
     GeneralError:
@@ -226,34 +273,31 @@ components:
       properties:
         name:
           type: string
-    AuthorWithId:
-      allOf:
-        - $ref: '#/components/schemas/Author'
-        - type: object
-          properties:
-            id:
-              type: integer
-              format: int64
     Character:
       type: object
       required: 
         - name
         - gender
       properties:
-        id:
-          type: integer
-          format: int64
         name:
           type: string
         age:
           type: integer
           format: int32
-        created_at:
-          type: string
-        updated_at:
-          type: string
         gender:
           $ref: '#/components/schemas/Gender'
+    CharacterWithId:
+      allOf:
+        - $ref: '#/components/schemas/Character'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            created_at:
+              type: string
+            updated_at:
+              type: string  
           
     Comment:
       type: object
@@ -261,19 +305,25 @@ components:
         - comment
         - ip
       properties:
-        id:
-          type: integer
-          format: int64
         comment:
           type: string
           maxLength: 500
         ip:
           type: string
-        created_at:
-          type: string
-        updated_at:
-          type: string
           
+    CommentWithId:
+      allOf:
+        - $ref: '#/components/schemas/Comment'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            created_at:
+              type: string
+            updated_at:
+              type: string
+              
     Gender:
       type: object
       required:
@@ -281,14 +331,6 @@ components:
       properties:
         gender_type:
           type: string
-    GenderWithId:
-      allOf:
-        - $ref: '#/components/schemas/Gender'
-        - type: object
-          properties:
-            id:
-              type: integer
-              format: int64
   parameters:
     sortCharacters:
       name: sort

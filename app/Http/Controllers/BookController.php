@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Models\Character;
 use App\Models\Author;
 use App\Models\Comment;
+use Illuminate\Database\Query\Builder;
 
 class BookController extends Controller {
     
@@ -95,12 +96,14 @@ class BookController extends Controller {
                 }
             }
             $sort = 'name';
+            $sortType = 'asc';
             if($request->has('sort')) {
                 if(!empty($sort)) {
                     $sort = $request->input('sort');
                     Log::info('sorting collection by : ',  ['sort' => $sort]);
-                    $characters = $characters->sortBy(function($query) use ($sort) {
-                        return $query->orderBy($sort);
+                    /** @var Builder $query **/
+                    $characters = $characters->sortBy(function($query) use ($sort,$sortType) {
+                        return ($sortType == 'desc') ? $query->orderByDesc($sort): $query->orderBy($sort);
                     });
                 }
             }

@@ -20,12 +20,16 @@ $router->get('/', function () use ($router) {
 $router->group(['prefix' => 'api/v1'], function () use ($router) {
     $router->get('books',  ['uses' => 'BookController@books']);
     $router->get('books/{id}',  ['uses' => 'BookController@book']);
-    $router->get('books/{id}/comments',  ['uses' => 'BookController@bookComments']);
-    $router->post('books/{id}/comments',  ['uses' => 'BookController@createBookComment']);
+    $router->get('documentation', function(){return view('swagger.index');});
+    $router->get('books/{id}/comments',  ['uses' => 'BookController@bookComments']);    
     $router->get('books/{id}/characters',  ['uses' => 'BookController@bookCharacters']);
     $router->post('books/{id}/characters',  ['uses' => 'BookController@createBookCharacter']);
+    $router->post('books/{id}/comments',  ['uses' => 'BookController@createBookComment']);
     $router->post('books',  ['uses' => 'BookController@create']);
-    $router->delete('books/{id}',  ['uses' => 'BookController@delete']);
     $router->put('books/{id}',  ['uses' => 'BookController@update']);
-    $router->get('documentation', function(){return view('swagger.index');});
+    $router->put('comments/{id}',  ['uses' => 'BookController@updateComment']);
+    $router->put('characters/{id}',  ['uses' => 'CommentController@updateCharacter']);
+    $router->delete('books/{id}',  ['uses' => 'CharacterController@delete']);
+    $router->delete('comments/{id}',  ['uses' => 'CommentController@deleteComment']);
+    $router->delete('characters/{id}',  ['uses' => 'CharacterController@deleteCharacter']);
 });

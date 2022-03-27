@@ -3,14 +3,26 @@
 namespace App\Http\Controllers;
 
 
-use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Support\Facades\Log;
+use App\Models\Comment;
 
 class CommentController extends Controller {
-    /**
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function deleteComment(Request $request) {
+    
+    
+    public function deleteComment($id) {
+        try {
+            Comment::findOrFail($id)->delete();
+        } catch (NotFoundHttpException $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+            return response("resource not found",404);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response('server error',500);
+        }
+        return response('Deleted Successfully', 200);
     }    
 }

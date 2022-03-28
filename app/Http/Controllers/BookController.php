@@ -232,6 +232,7 @@ class BookController extends Controller {
             $book = Book::findOrFail($id);
             Log::info('book',['book' => $book]);
             $book->update($request->all());
+            $currentAuthors = [];
             if($request->has('authors')) {
                 $authors = $request->input('authors');
                 /** @var Collection **/
@@ -269,15 +270,15 @@ class BookController extends Controller {
                     $book->authors()->detach($ad->id);
                     $ad->delete();
                 }
-            }
-            
+            }            
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
             return response("resource not found",404);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return response('server error',500);
-        }        
+        }
+        
         return response()->json($book, 200);
     }
 

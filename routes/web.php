@@ -27,9 +27,9 @@ $router->group(['prefix' => 'api/v1'], function () use ($router) {
     $router->post('books/{id}/comments',  ['uses' => 'BookController@createBookComment']);
     $router->post('books',  ['uses' => 'BookController@create']);
     $router->put('books/{id}',  ['uses' => 'BookController@update']);
-    $router->put('comments/{id}',  ['uses' => 'BookController@updateComment']);
-    $router->put('characters/{id}',  ['uses' => 'CommentController@updateCharacter']);
-    $router->delete('books/{id}',  ['uses' => 'CharacterController@delete']);
+    $router->put('comments/{id}',  ['uses' => 'CommentController@updateComment']);
+    $router->put('characters/{id}',  ['uses' => 'CharacterController@updateCharacter']);
+    $router->delete('books/{id}',  ['uses' => 'BookController@delete']);
     $router->delete('comments/{id}',  ['uses' => 'CommentController@deleteComment']);
     $router->delete('characters/{id}',  ['uses' => 'CharacterController@deleteCharacter']);
 });

@@ -125,7 +125,7 @@ servers:
 ```
 php -S localhost:<port> -t public
 ```
-- You can access the API documentation and try it out via ```http:///<your server ip>:<port>/api/v1/documentation
+- You can access the API documentation and try it out via ```http:///<your server ip>:<port>/api/v1/documentation```
 
 ### Known issues
 

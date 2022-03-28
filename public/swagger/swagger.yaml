@@ -8,8 +8,8 @@ info:
     email: donopiyo@gmail.com
   
 servers:
-- url: http://local-dev:8000/
-  description: kvm development server
+- url: http://localhost:8000
+  description: localhost development server
   
 tags:
   - name: Book

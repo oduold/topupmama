@@ -1,10 +1,10 @@
-# Topmama simple book API
+# Topupmama(topmama) simple book API
 
 [![License](https://img.shields.io/packagist/l/laravel/framework)](https://packagist.org/packages/laravel/lumen-framework)
 
 ## Introduction
 
-Topmama simple book api is implemented using Laravel Lumen stunningly fast PHP micro-framework for building web applications with expressive, elegant syntax. 
+Topupmama simple book api is implemented using Laravel Lumen stunningly fast PHP micro-framework for building web applications with expressive, elegant syntax. 
 
 ## Official Documentation
 

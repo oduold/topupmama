@@ -232,6 +232,7 @@ class BookController extends Controller {
             $book = Book::findOrFail($id);
             Log::info('book',['book' => $book]);
             $book->update($request->all());
+            $currentAuthors = [];
             if($request->has('authors')) {
                 $authors = $request->input('authors');
                 /** @var Collection **/
@@ -260,16 +261,16 @@ class BookController extends Controller {
                         array_push($carray, $author->id);
                     }
                 }
-            }
-            $authorsToDelete = $currentAuthors->except($carray);
-            Log::info('current after author operation', ['currentAuthors' => $carray, 'tobedeleted' => $authorsToDelete]);
-            //delete authors
-            /** @var Author $ad **/
-            foreach ($authorsToDelete as $ad) {
-                //detach from book
-                $book->authors()->detach($ad->id);
-                $ad->delete();
-            }
+                $authorsToDelete = $currentAuthors->except($carray);
+                Log::info('current after author operation', ['currentAuthors' => $carray, 'tobedeleted' => $authorsToDelete]);
+                //delete authors
+                /** @var Author $ad **/
+                foreach ($authorsToDelete as $ad) {
+                    //detach from book
+                    $book->authors()->detach($ad->id);
+                    $ad->delete();
+                }
+            }            
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
             return response("resource not found",404);

@@ -9,7 +9,7 @@ info:
   
 servers:
 - url: http://local-dev:8000/
-  description: kvm development server
+  description: localhost development server
   
 tags:
   - name: Book

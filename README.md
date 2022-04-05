@@ -8,7 +8,7 @@ Topupmama simple book api is implemented using Laravel Lumen stunningly fast PHP
 
 ## Official Documentation
 
-Documentation for the API can be found on the [Topmama API Documentation website](http://local-dev:8000/api/v1/documentation).
+Documentation for the API can be found on the [Topmama API Documentation website](http://ec2-3-91-209-87.compute-1.amazonaws.com:8000/api/v1/documentation).
 
 ## License
 

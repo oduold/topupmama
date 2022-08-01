@@ -8,7 +8,7 @@ Topupmama simple book api is implemented using Laravel Lumen stunningly fast PHP
 
 ## Official Documentation
 
-Documentation for the API can be found on the [Topmama API Documentation website](http://ec2-3-91-209-87.compute-1.amazonaws.com:8000/api/v1/documentation).
+Documentation for the API can be found on the [Topupmama API Documentation website](http://ec2-3-91-209-87.compute-1.amazonaws.com:8000/api/v1/documentation).
 
 ## License
 
@@ -28,18 +28,18 @@ If you are not using [Homestead](https://github.com/laravel/homestead), you will
 
 ### Installing The API
 
-- Download the [zip file](https://github.com/oduold/topmama/archive/refs/heads/main.zip) or Clone this project. If you require more information on how you can do this, look into the following documentation on [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository). If you prefer GUI based solution look into [Cloning and forking repositories from GitHub Desktop](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/adding-and-cloning-repositories/cloning-and-forking-repositories-from-github-desktop). I prefer the command line.
+- Download the [zip file](https://github.com/oduold/topupmama/archive/refs/heads/main.zip) or Clone this project. If you require more information on how you can do this, look into the following documentation on [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository). If you prefer GUI based solution look into [Cloning and forking repositories from GitHub Desktop](https://docs.github.com/en/desktop/contributing-and-collaborating-using-github-desktop/adding-and-cloning-repositories/cloning-and-forking-repositories-from-github-desktop). I prefer the command line.
 
 ```
-git clone git@github.com:oduold/topmama.git
+git clone git@github.com:oduold/topupmama.git
 ```
 
 - The REST API is implemented using Laravel lumen. Lumen utilizes [Composer](https://getcomposer.org/) to manage its dependencies. So, before using the REST API, make sure you have [Composer](https://getcomposer.org/) installed on your machine. 
 
-- Change directory to topmama directory after cloning the project
+- Change directory to topupmama directory after cloning the project
 
 ```
-cd topmama
+cd topupmama
 ```
 
 - Run composer update. Verify you have the system requirements mentioned above
@@ -70,7 +70,7 @@ mv .env.example .env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=topmama
+DB_DATABASE=topupmama
 DB_USERNAME=user
 DB_PASSWORD=password
 
